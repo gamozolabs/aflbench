@@ -7,9 +7,12 @@ MAX_THREADS = 192
 
 def fuzz_worker(thr_id):
     os.sched_setaffinity(0, [thr_id])
-    subprocess.check_call(["../AFLplusplus/afl-fuzz", "-i", "inputs/", "-o",
-        "outputs/", "-d", "-S", f"{thr_id}", "./aflfuzzbencher", "@@"],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+    sp=subprocess.Popen([f"../AFLplusplus/afl-fuzz -i inputs/ -o outputs/ -d -S {thr_id} -- ./aflfuzzbencher @@"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+    while sp.poll() == None:
+        print(sp.stdout.read())
+        print(sp.stderr.read())
+        time.sleep(0.1)
 
 def benchmark_afl(num_threads):
     assert num_threads > 0
